@@ -49,6 +49,9 @@ public:
 	int		nRows;
 	int		nFields;
 	
+	//settings
+	void	setTimeout(unsigned int timeout);
+	void	setOption(mysql_option setting, const void* value);
 protected:
 	void	reportError();
 	string	buildValueString(vector<ofxMySQLField> &fields);

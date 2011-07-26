@@ -21,6 +21,8 @@ ofxMySQL::ofxMySQL()
 	
 	_db = new MYSQL();
 	mysql_init(_db);
+	
+	setTimeout(5);
 }
 
 ofxMySQL::~ofxMySQL()
@@ -31,6 +33,9 @@ ofxMySQL::~ofxMySQL()
 
 void ofxMySQL::connect(string hostname, string username, string password, string dbname="")
 {
+	if (isConnected)
+		mysql_close(_db);
+	
 	isConnected = mysql_real_connect(_db,hostname.c_str(),username.c_str(),password.c_str(),dbname.c_str(),0,NULL,0);
 	
 	if (!isConnected)
@@ -182,6 +187,14 @@ bool ofxMySQL::deleteRow(string tableName, string whereCondition)
 {
 	string querystring = "DELETE FROM " + tableName + " WHERE " + whereCondition;
 	return query(querystring);
+}
+
+void ofxMySQL::setTimeout(unsigned int timeout) {
+	setOption(MYSQL_OPT_CONNECT_TIMEOUT, &timeout);
+}
+
+void ofxMySQL::setOption(mysql_option setting, const void* value) {
+	mysql_options(_db, setting, value);
 }
 
 //////////////////////////////////////////////////////////////////////
