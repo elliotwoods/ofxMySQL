@@ -22,6 +22,29 @@ public:
 class ofxMySQL
 {
 public:
+	class RowResult : public map<string, string> {
+	public:
+		template<typename FieldType>
+		bool get(string fieldName, FieldType & value) const {
+			auto findFieldName = this->find(fieldName);
+			if (findFieldName != this->end()) {
+				auto findFieldValue = findFieldName->second;
+				if (typeid(FieldType) == typeid(int)) {
+					value = ofToInt(findFieldValue);
+					return true;
+				} else if (typeid(FieldType) == typeid(float)) {
+					value = ofToFloat(findFieldValue);
+					return true;
+				} else if (typeid(FieldType) == typeid(string)) {
+					value = * (FieldType *) & findFieldValue;
+					return true;
+				}
+			}
+			return false;
+		}
+	};
+	typedef vector<RowResult> MultipleRowResult;
+	
 	ofxMySQL();
 	~ofxMySQL();
 	
@@ -30,8 +53,13 @@ public:
     
 	bool	query(string querystring);
 	
+	///returns a vector of rows, for each row we store the values in a map of <filedname, value>
+	MultipleRowResult select(string tableName, string fields = "*", string options="");
+	
+	//old select syntax
 	bool	getStrings(vector<string> &results, string tableName, string fieldName, string whereCondition="");
 	bool	getStrings(vector<vector<string> > &results, string tableName, vector<string> fieldNames, string whereCondition="");
+	
 	int		insert(string tableName, vector<ofxMySQLField> &fields);
 	bool	update(string tableName, vector<ofxMySQLField> &fields, string whereCondition);
 	bool	deleteRow(string tableName, string whereCondition);

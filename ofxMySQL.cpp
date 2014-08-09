@@ -50,13 +50,13 @@ void ofxMySQL::close()
 //----------
 bool ofxMySQL::query(string querystring)
 {
-	if (this->connected)
+	if (!this->connected)
 	{
 		ofLog(OF_LOG_WARNING, "ofxMySQL: Attempting to query without connection");
 		return false;
 	}
 	
-	bool success = !mysql_query(_db, querystring.c_str());
+	bool success = mysql_query(_db, querystring.c_str()) == 0;
 	
 	if (success)
 	{
@@ -72,6 +72,32 @@ bool ofxMySQL::query(string querystring)
 	}
 
 	return success;
+}
+
+//----------
+ofxMySQL::MultipleRowResult ofxMySQL::select(string tableName, string fields, string options) {
+	ofxMySQL::MultipleRowResult results;
+	
+	if (fields.find(',') != string::npos && fields[0] != '(') {
+		fields = "(" + fields + ")";
+	}
+	string queryString = "SELECT " + fields + " FROM " + tableName + " " + options;
+	if (this->query(queryString)) {
+		vector<string> returnedFields;
+		while (auto field = mysql_fetch_field(this->_result)) {
+			returnedFields.push_back(field->name);
+		}
+		while (auto row = mysql_fetch_row(this->_result)) {
+			RowResult outputRow;
+			int fieldIndex = 0;
+			for(auto fieldName : returnedFields) {
+				outputRow[fieldName] = row[fieldIndex++];
+			}
+			results.push_back(outputRow);
+		}
+	}
+	
+	return results;
 }
 
 //----------
