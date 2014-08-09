@@ -1,20 +1,12 @@
-/*
- *  ofxMySQL.cpp
- *	iOS oF extension
- *
- *  Created by Elliot Woods on 28/11/2010.
- *  Copyright 2010 Kimchi and Chips. All rights reserved.
- *
- */
-
 // instructions to build libmysql.a at
 // http://blog.iosplace.com/?p=20
 
 #include "ofxMySQL.h"
 
+//----------
 ofxMySQL::ofxMySQL()
 {
-	isConnected = false;
+	this->connected = false;
 	
 	nRows = 0;
 	nFields = 0;
@@ -25,20 +17,23 @@ ofxMySQL::ofxMySQL()
 	setTimeout(5);
 }
 
+//----------
 ofxMySQL::~ofxMySQL()
 {
 	close();
 	delete _db;
 }
 
+//----------
 void ofxMySQL::connect(string hostname, string username, string password, string dbname="")
 {
-	if (isConnected)
+	if (this->connected) {
 		mysql_close(_db);
+	}
 	
-	isConnected = mysql_real_connect(_db,hostname.c_str(),username.c_str(),password.c_str(),dbname.c_str(),0,NULL,0);
+	this->connected= mysql_real_connect(_db,hostname.c_str(),username.c_str(),password.c_str(),dbname.c_str(),0,NULL,0);
 	
-	if (!isConnected)
+	if (this->connected)
 	{
 		ofLog(OF_LOG_ERROR, "ofxMySQL: Connection failed to database '" + dbname + "' on host " + hostname);
 		reportError();
@@ -46,14 +41,16 @@ void ofxMySQL::connect(string hostname, string username, string password, string
 		ofLog(OF_LOG_VERBOSE, "ofxMySQL: Successfully connected to database '" + dbname + "' on host " + hostname);
 }
 
+//----------
 void ofxMySQL::close()
 {
     mysql_close(_db);
 }
 
+//----------
 bool ofxMySQL::query(string querystring)
 {
-	if (!isConnected)
+	if (this->connected)
 	{
 		ofLog(OF_LOG_WARNING, "ofxMySQL: Attempting to query without connection");
 		return false;
@@ -77,6 +74,7 @@ bool ofxMySQL::query(string querystring)
 	return success;
 }
 
+//----------
 bool ofxMySQL::getStrings(vector<string> &results, string tableName, string fieldName, string whereCondition)
 {
 	//get a field
@@ -94,13 +92,15 @@ bool ofxMySQL::getStrings(vector<string> &results, string tableName, string fiel
 	
 	//fill in vector
 	MYSQL_ROW row;
-	while (row = mysql_fetch_row(_result))
+	while ((row = mysql_fetch_row(_result))) {
 		results.push_back(row[0]);
+	}
 	
 	return true;
 	
 }
 
+//----------
 bool ofxMySQL::getStrings(vector<vector<string> > &results, string tableName, vector<string> fieldNames, string whereCondition)
 {
 	//get a vector of fields
@@ -132,7 +132,7 @@ bool ofxMySQL::getStrings(vector<vector<string> > &results, string tableName, ve
 	
 	//fill in vector
 	MYSQL_ROW row;
-	while (row = mysql_fetch_row(_result))
+	while ((row = mysql_fetch_row(_result)))
 	{
 		
 		//populate values
@@ -147,8 +147,7 @@ bool ofxMySQL::getStrings(vector<vector<string> > &results, string tableName, ve
 	
 }
 
-
-
+//----------
 int ofxMySQL::insert(string tableName, vector<ofxMySQLField> &fields)
 {
 	string querystring = "INSERT INTO " + tableName;
@@ -162,6 +161,7 @@ int ofxMySQL::insert(string tableName, vector<ofxMySQLField> &fields)
 	
 }
 
+//----------
 bool ofxMySQL::update(string tableName, vector<ofxMySQLField> &fields, string whereCondition)
 {
 	//UPDATE table_name SET field1=new-value1, field2=new-value2
@@ -183,23 +183,37 @@ bool ofxMySQL::update(string tableName, vector<ofxMySQLField> &fields, string wh
 	return (query(querystring));
 }
 
+//----------
 bool ofxMySQL::deleteRow(string tableName, string whereCondition)
 {
 	string querystring = "DELETE FROM " + tableName + " WHERE " + whereCondition;
 	return query(querystring);
 }
 
+//----------
+bool ofxMySQL::isConnected() const {
+	return this->connected;
+}
+
+//----------
 void ofxMySQL::setTimeout(unsigned int timeout) {
 	setOption(MYSQL_OPT_CONNECT_TIMEOUT, &timeout);
 }
 
+//----------
 void ofxMySQL::setOption(mysql_option setting, const void* value) {
 	mysql_options(_db, setting, value);
+}
+
+//----------
+MYSQL * ofxMySQL::getDatabase() {
+	return this->_db;
 }
 
 //////////////////////////////////////////////////////////////////////
 //privates
 
+//----------
 void ofxMySQL::reportError()
 {
 	const char *errorChar = mysql_error(_db);
@@ -207,6 +221,7 @@ void ofxMySQL::reportError()
 	ofLog(OF_LOG_ERROR, "ofxMySQL: " + string(errorChar));
 }
 
+//----------
 string ofxMySQL::buildValueString(vector<ofxMySQLField> &fields)
 {
 	string querystring = "(";

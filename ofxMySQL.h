@@ -1,12 +1,4 @@
 #pragma once
-/*
- *  ofxMySQL.h
- *	iOS oF extension
- *
- *  Created by Elliot Woods on 28/11/2010.
- *  Copyright 2010 Kimchi and Chips. All rights reserved.
- *
- */
 
 // instructions to build libmysql.a at
 // http://blog.iosplace.com/?p=20
@@ -44,7 +36,7 @@ public:
 	bool	update(string tableName, vector<ofxMySQLField> &fields, string whereCondition);
 	bool	deleteRow(string tableName, string whereCondition);
 
-	bool	isConnected;
+	bool	isConnected() const;
 	
 	int		nRows;
 	int		nFields;
@@ -52,10 +44,13 @@ public:
 	//settings
 	void	setTimeout(unsigned int timeout);
 	void	setOption(mysql_option setting, const void* value);
+	
+	MYSQL	* getDatabase();
 protected:
 	void	reportError();
 	string	buildValueString(vector<ofxMySQLField> &fields);
 	MYSQL		*_db;
 	MYSQL_RES	*_result;
+	bool	connected;
 };
 
