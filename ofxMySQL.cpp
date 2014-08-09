@@ -75,8 +75,8 @@ bool ofxMySQL::query(string querystring)
 }
 
 //----------
-ofxMySQL::MultipleRowResult ofxMySQL::select(string tableName, string fields, string options) {
-	ofxMySQL::MultipleRowResult results;
+ofxMySQL::MultipleRow ofxMySQL::select(string tableName, string fields, string options) {
+	ofxMySQL::MultipleRow results;
 	
 	if (fields.find(',') != string::npos && fields[0] != '(') {
 		fields = "(" + fields + ")";
@@ -88,7 +88,7 @@ ofxMySQL::MultipleRowResult ofxMySQL::select(string tableName, string fields, st
 			returnedFields.push_back(field->name);
 		}
 		while (auto row = mysql_fetch_row(this->_result)) {
-			RowResult outputRow;
+			Row outputRow;
 			int fieldIndex = 0;
 			for(auto fieldName : returnedFields) {
 				outputRow[fieldName] = row[fieldIndex++];
@@ -188,8 +188,53 @@ int ofxMySQL::insert(string tableName, vector<ofxMySQLField> &fields)
 }
 
 //----------
-bool ofxMySQL::update(string tableName, vector<ofxMySQLField> &fields, string whereCondition)
-{
+int ofxMySQL::insert(string tableName, const Row & row) {
+	string fieldNameString;
+	string valueString;
+	
+	for(auto field : row) {
+		if (fieldNameString != "") {
+			fieldNameString += ", ";
+		}
+		fieldNameString += field.first;
+		
+		if (valueString != "") {
+			valueString += ", ";
+		}
+		valueString += field.second;
+	}
+	
+	const auto queryString = "INSERT INTO " + tableName + " (" + fieldNameString + ") VALUES (" + valueString + ")";
+	if (!query(queryString)) {
+		ofLogError("ofxMySQL") << queryString;
+		return -1;
+	}
+	
+	return mysql_insert_id(_db);
+}
+
+//----------
+bool ofxMySQL::update(string tableName, const Row & row, string whereCondition) {
+	string querystring = "UPDATE " + tableName + " SET ";
+	
+	bool firstField;
+	for (auto field : row) {
+		if (!firstField) {
+			querystring += ", ";
+		}
+		firstField = false;
+		
+		querystring += field.first + "=";
+		querystring += "'" + field.second + "'";
+	}
+	
+	querystring += " WHERE " + whereCondition;
+	
+	return (query(querystring));
+}
+
+//----------
+bool ofxMySQL::update(string tableName, vector<ofxMySQLField> &fields, string whereCondition) {
 	//UPDATE table_name SET field1=new-value1, field2=new-value2
 	//[WHERE Clause]
 	

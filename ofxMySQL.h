@@ -22,7 +22,7 @@ public:
 class ofxMySQL
 {
 public:
-	class RowResult : public map<string, string> {
+	class Row : public map<string, string> {
 	public:
 		template<typename FieldType>
 		bool get(string fieldName, FieldType & value) const {
@@ -42,8 +42,15 @@ public:
 			}
 			return false;
 		}
+		
+		template<typename FieldType>
+		void set(string fieldName, FieldType & value) {
+			stringstream ss;
+			ss << value;
+			(*this)[fieldName] = ss.str();
+		}
 	};
-	typedef vector<RowResult> MultipleRowResult;
+	typedef vector<Row> MultipleRow;
 	
 	ofxMySQL();
 	~ofxMySQL();
@@ -54,14 +61,16 @@ public:
 	bool	query(string querystring);
 	
 	///returns a vector of rows, for each row we store the values in a map of <filedname, value>
-	MultipleRowResult select(string tableName, string fields = "*", string options="");
+	MultipleRow select(string tableName, string fields = "*", string options="");
 	
 	//old select syntax
 	bool	getStrings(vector<string> &results, string tableName, string fieldName, string whereCondition="");
 	bool	getStrings(vector<vector<string> > &results, string tableName, vector<string> fieldNames, string whereCondition="");
 	
 	int		insert(string tableName, vector<ofxMySQLField> &fields);
+	int		insert(string tableName, const Row &);
 	bool	update(string tableName, vector<ofxMySQLField> &fields, string whereCondition);
+	bool	update(string tableName, const Row &, string whereCondition);
 	bool	deleteRow(string tableName, string whereCondition);
 
 	bool	isConnected() const;
