@@ -32,13 +32,14 @@ void ofxMySQL::connect(string hostname, string username, string password, string
 	}
 	
 	this->connected= mysql_real_connect(_db,hostname.c_str(),username.c_str(),password.c_str(),dbname.c_str(),0,NULL,0);
-	
+	cout << username << ":" << password << endl;
 	if (this->connected)
 	{
 		ofLog(OF_LOG_ERROR, "ofxMySQL: Connection failed to database '" + dbname + "' on host " + hostname);
 		reportError();
-	} else
+	} else {
 		ofLog(OF_LOG_VERBOSE, "ofxMySQL: Successfully connected to database '" + dbname + "' on host " + hostname);
+	}
 }
 
 //----------
