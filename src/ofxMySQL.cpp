@@ -31,7 +31,12 @@ void ofxMySQL::connect(string hostname, string username, string password, string
 		mysql_close(_db);
 	}
 	
-	this->connected= mysql_real_connect(_db,hostname.c_str(),username.c_str(),password.c_str(),dbname.c_str(),0,NULL,0);
+	// If database is empty, we just try to connect to the server without looking for a database
+	if(dbname == "") {
+		this->connected= mysql_real_connect(_db,hostname.c_str(),username.c_str(),password.c_str(),NULL,0,NULL,0);
+	} else {
+		this->connected= mysql_real_connect(_db,hostname.c_str(),username.c_str(),password.c_str(),dbname.c_str(),0,NULL,0);
+	}
 	
 	if (this->connected)
 	{
