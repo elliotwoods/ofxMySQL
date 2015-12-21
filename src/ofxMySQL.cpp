@@ -184,7 +184,7 @@ int ofxMySQL::insert(string tableName, vector<ofxMySQLField> &fields)
 		return -1;
 	
 	return mysql_insert_id(_db);
-	
+
 }
 
 //----------
@@ -217,7 +217,7 @@ int ofxMySQL::insert(string tableName, const Row & row) {
 bool ofxMySQL::update(string tableName, const Row & row, string whereCondition) {
 	string querystring = "UPDATE " + tableName + " SET ";
 	
-	bool firstField;
+	bool firstField = true;
 	for (auto field : row) {
 		if (!firstField) {
 			querystring += ", ";
