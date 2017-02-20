@@ -98,6 +98,8 @@ ofxMySQL::MultipleRow ofxMySQL::select(string tableName, string fields, string o
 		}
 	}
 	
+	mysql_free_result(_result);
+	
 	return results;
 }
 
@@ -122,6 +124,8 @@ bool ofxMySQL::getStrings(vector<string> &results, string tableName, string fiel
 	while ((row = mysql_fetch_row(_result))) {
 		results.push_back(row[0]);
 	}
+	
+	mysql_free_result(_result);
 	
 	return true;
 	
@@ -169,6 +173,8 @@ bool ofxMySQL::getStrings(vector<vector<string> > &results, string tableName, ve
 		//insert row into results
 		results.push_back(resultsRow);
 	}
+	
+	mysql_free_result(_result);
 	
 	return true;
 	
