@@ -33,7 +33,7 @@ void ofxMySQL::connect(string hostname, string username, string password, string
 	
 	this->connected= mysql_real_connect(_db,hostname.c_str(),username.c_str(),password.c_str(),dbname.c_str(),0,NULL,0);
 	cout << username << ":" << password << endl;
-	if (this->connected)
+	if (!this->connected)
 	{
 		ofLog(OF_LOG_ERROR, "ofxMySQL: Connection failed to database '" + dbname + "' on host " + hostname);
 		reportError();
@@ -98,6 +98,8 @@ ofxMySQL::MultipleRow ofxMySQL::select(string tableName, string fields, string o
 		}
 	}
 	
+	mysql_free_result(_result);
+	
 	return results;
 }
 
@@ -122,6 +124,8 @@ bool ofxMySQL::getStrings(vector<string> &results, string tableName, string fiel
 	while ((row = mysql_fetch_row(_result))) {
 		results.push_back(row[0]);
 	}
+	
+	mysql_free_result(_result);
 	
 	return true;
 	
@@ -169,6 +173,8 @@ bool ofxMySQL::getStrings(vector<vector<string> > &results, string tableName, ve
 		//insert row into results
 		results.push_back(resultsRow);
 	}
+	
+	mysql_free_result(_result);
 	
 	return true;
 	
